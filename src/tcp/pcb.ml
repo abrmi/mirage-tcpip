@@ -83,7 +83,10 @@ struct
 
   let ip { ip; _ } = ip
 
-  let wscale_default = 2
+  let wscale_default =
+    try
+      min 10 @@ max 2 @@ int_of_string @@ Unix.getenv "TCPIP_WSCALE"
+    with _ -> 2
 
   module Tx = struct
 

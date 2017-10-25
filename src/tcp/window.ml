@@ -69,6 +69,11 @@ let pp fmt t =
     Sequence.pp t.snd_una
     t.backoff_count t.rto
 
+let initcwnd =
+  try
+    min 64 @@ max 2 @@ int_of_string @@ Unix.getenv "TCPIP_INITCWND"
+  with _ -> 2
+
 (* Initialise the sequence space *)
 let t ~rx_wnd_scale ~tx_wnd_scale ~rx_wnd ~tx_wnd ~rx_isn ~tx_mss ~tx_isn =
   let tx_nxt = tx_isn in
@@ -86,7 +91,7 @@ let t ~rx_wnd_scale ~tx_wnd_scale ~rx_wnd ~tx_wnd ~rx_isn ~tx_mss ~tx_isn =
   (* ssthresh is initialized per RFC 2581 to a large value so slow-start
      can be used all the way till first loss *)
   let ssthresh = tx_wnd in
-  let cwnd = Int32.of_int (tx_mss * 2) in
+  let cwnd = Int32.of_int (tx_mss * initcwnd) in
   let fast_recovery = false in
   let rtt_timer_on = false in
   let rtt_timer_reset = true in
